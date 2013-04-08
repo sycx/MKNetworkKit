@@ -72,7 +72,9 @@ const float kFreshLoadAnimationDuration = 0.35f;
 }
 
 -(MKNetworkOperation*) setImageFromURL:(NSURL*) url placeHolderImage:(UIImage*) image usingEngine:(MKNetworkEngine*) imageCacheEngine animation:(BOOL) yesOrNo {
-  
+    if ([self.imageFetchOperation.url isEqual:url.absoluteString]) {
+        return self.imageFetchOperation;
+    }
   if(image) self.image = image;
   [self.imageFetchOperation cancel];
   if(!imageCacheEngine) imageCacheEngine = DefaultEngine;
@@ -82,12 +84,16 @@ const float kFreshLoadAnimationDuration = 0.35f;
                                                        size:self.frame.size
                                           completionHandler:^(UIImage *fetchedImage, NSURL *url, BOOL isInCache) {
                                             
-                                            [UIView transitionWithView:self.superview
-                                                              duration:isInCache?kFromCacheAnimationDuration:kFreshLoadAnimationDuration
-                                                               options:UIViewAnimationOptionTransitionCrossDissolve | UIViewAnimationOptionAllowUserInteraction
-                                                            animations:^{
-                                                                 self.image = fetchedImage;
-                                                               } completion:nil];
+                                              if (yesOrNo) {
+                                                  [UIView transitionWithView:self.superview
+                                                                    duration:isInCache?kFromCacheAnimationDuration:kFreshLoadAnimationDuration
+                                                                     options:UIViewAnimationOptionTransitionCrossDissolve | UIViewAnimationOptionAllowUserInteraction
+                                                                  animations:^{
+                                                                      self.image = fetchedImage;
+                                                                  } completion:nil];
+                                              } else {
+                                                  self.image = fetchedImage;
+                                              }
                                             
                                           } errorHandler:^(MKNetworkOperation *completedOperation, NSError *error) {
                                             
